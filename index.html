@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineBook - Movie Ticket Booking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎬 CineBook</div>
+            <div class="nav-links">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#movies" class="nav-link">Movies</a>
+                <div id="userNav" style="display: none;">
+                    <a href="#bookings" class="nav-link">My Bookings</a>
+                    <a href="#profile" class="nav-link">Profile</a>
+                    <button onclick="logout()" class="btn-logout">Logout</button>
+                </div>
+                <div id="guestNav">
+                    <button onclick="showModal('loginModal')" class="btn-primary">Login</button>
+                    <button onclick="showModal('registerModal')" class="btn-secondary">Register</button>
+                </div>
+                <div id="adminNav" style="display: none;">
+                    <a href="#admin" class="nav-link admin-link">Admin Panel</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Book Your Movie Tickets</h1>
+            <p>Experience cinema like never before</p>
+            <button onclick="scrollToMovies()" class="btn-primary btn-large">Browse Movies</button>
+        </div>
+    </section>
+
+    <!-- Trending Movies Section -->
+    <section class="trending-section">
+        <div class="container">
+            <h2>🔥 Trending Now</h2>
+            <div id="trendingMoviesGrid" class="movies-grid">
+                <!-- Trending movies loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Search & Filter -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-bar">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search movies..." 
+                    class="search-input"
+                    onkeyup="filterMovies()"
+                >
+                <select id="genreFilter" class="filter-select" onchange="filterMovies()">
+                    <option value="">All Genres</option>
+                    <option value="Action">Action</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="Sci-Fi">Sci-Fi</option>
+                    <option value="Crime">Crime</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Animation">Animation</option>
+                    <option value="Thriller">Thriller</option>
+                    <option value="Musical">Musical</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Movies Section -->
+    <section id="movies" class="movies-section">
+        <div class="container">
+            <h2>Now Showing</h2>
+            <div id="moviesGrid" class="movies-grid">
+                <!-- Movies loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Movie Detail Modal -->
+    <div id="movieDetailModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeModal('movieDetailModal')">&times;</span>
+            <div class="movie-detail">
+                <div class="movie-poster">
+                    <img id="detailPoster" src="" alt="Movie Poster">
+                </div>
+                <div class="movie-info">
+                    <h2 id="detailTitle"></h2>
+                    <div class="movie-meta">
+                        <span class="badge" id="detailGenre"></span>
+                        <span class="rating" id="detailRating">⭐</span>
+                    </div>
+                    <p id="detailDescription"></p>
+                    <div class="movie-details">
+                        <div class="detail-item">
+                            <strong>Duration:</strong>
+                            <span id="detailDuration"></span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Cast:</strong>
+                            <span id="detailCast"></span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Release Date:</strong>
+                            <span id="detailReleaseDate"></span>
+                        </div>
+                    </div>
+                    <div class="theater-selection">
+                        <h3>Select Theater & Show</h3>
+                        <select id="theatreSelect" class="select-input" onchange="loadShows()">
+                            <option value="">Choose a Theater</option>
+                        </select>
+                        <div id="showsGrid" class="shows-grid">
+                            <!-- Shows loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seat Selection Modal -->
+    <div id="seatSelectionModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeModal('seatSelectionModal')">&times;</span>
+            <h2>Select Your Seats</h2>
+            <div class="seat-container">
+                <div class="screen">SCREEN</div>
+                <div id="seatsGrid" class="seats-grid">
+                    <!-- Seats loaded here -->
+                </div>
+            </div>
+            <div class="seat-legend">
+                <div class="legend-item">
+                    <div class="seat seat-available seat-single"></div>
+                    <span>Single (₹per ticket)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="seat seat-available seat-couple"></div>
+                    <span>Couple (2 Seats)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="seat seat-available seat-family"></div>
+                    <span>Family (4 Seats)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="seat seat-selected"></div>
+                    <span>Selected</span>
+                </div>
+                <div class="legend-item">
+                    <div class="seat seat-booked"></div>
+                    <span>Booked</span>
+                </div>
+            </div>
+            
+            <!-- Seat Availability Summary -->
+            <div class="seat-availability-summary">
+                <h3>Available Seats</h3>
+                <div class="availability-grid">
+                    <div class="availability-item">
+                        <span class="seat-type-icon single">👤</span>
+                        <div>
+                            <div class="availability-label">Single Seats</div>
+                            <div class="availability-count" id="singleSeatsCount">0</div>
+                        </div>
+                    </div>
+                    <div class="availability-item">
+                        <span class="seat-type-icon couple">👥</span>
+                        <div>
+                            <div class="availability-label">Couple Seats</div>
+                            <div class="availability-count" id="coupleSeatsCount">0</div>
+                        </div>
+                    </div>
+                    <div class="availability-item">
+                        <span class="seat-type-icon family">👨‍👩‍👧‍👦</span>
+                        <div>
+                            <div class="availability-label">Family Seats</div>
+                            <div class="availability-count" id="familySeatsCount">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="booking-summary">
+                <div class="summary-item">
+                    <strong>Selected Seats:</strong>
+                    <span id="selectedSeatsDisplay">None</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Total Amount:</strong>
+                    <span id="totalAmountDisplay">₹0</span>
+                </div>
+                <button onclick="proceedToPayment()" class="btn-primary btn-large">Proceed to Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('paymentModal')">&times;</span>
+            <h2>Payment Details</h2>
+            <form onsubmit="processPayment(event)">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input 
+                        type="text" 
+                        id="cardNumber" 
+                        placeholder="1234 5678 9012 3456" 
+                        maxlength="16"
+                        required
+                    >
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input 
+                            type="text" 
+                            id="expiry" 
+                            placeholder="MM/YY" 
+                            maxlength="5"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label>CVV</label>
+                        <input 
+                            type="text" 
+                            id="cvv" 
+                            placeholder="123" 
+                            maxlength="3"
+                            required
+                        >
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cardholder Name</label>
+                    <input 
+                        type="text" 
+                        id="cardholderName" 
+                        placeholder="John Doe"
+                        required
+                    >
+                </div>
+                <div class="payment-summary">
+                    <strong>Total Amount: </strong>
+                    <span id="paymentAmountDisplay">₹0</span>
+                </div>
+                <button type="submit" class="btn-primary btn-large">Complete Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Booking Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('confirmationModal')">&times;</span>
+            <div class="confirmation-success">
+                <div class="success-icon">✅</div>
+                <h2>Booking Confirmed!</h2>
+                <div class="confirmation-details">
+                    <div class="detail-row">
+                        <strong>Booking Reference:</strong>
+                        <span id="bookingReference"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Movie:</strong>
+                        <span id="confirmationMovie"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Theater:</strong>
+                        <span id="confirmationTheater"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Show Time:</strong>
+                        <span id="confirmationTime"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Seats:</strong>
+                        <span id="confirmationSeats"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Total Amount:</strong>
+                        <span id="confirmationAmount"></span>
+                    </div>
+                </div>
+                <button onclick="goHome()" class="btn-primary btn-large">Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Login</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary btn-large">Login</button>
+                <p class="form-footer">
+                    Don't have account? 
+                    <a href="#" onclick="switchModal('loginModal', 'registerModal')">Register</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>Register</h2>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="registerPhone">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="btn-primary btn-large">Register</button>
+                <p class="form-footer">
+                    Already have account? 
+                    <a href="#" onclick="switchModal('registerModal', 'loginModal')">Login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bookings History Modal -->
+    <div id="bookingsModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeModal('bookingsModal')">&times;</span>
+            <h2>My Bookings</h2>
+            <div id="bookingsList" class="bookings-list">
+                <!-- Bookings loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeModal('adminModal')">&times;</span>
+            <div class="admin-panel">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="switchAdminTab('dashboard')">Dashboard</button>
+                    <button class="admin-tab" onclick="switchAdminTab('movies')">Manage Movies</button>
+                    <button class="admin-tab" onclick="switchAdminTab('theaters')">Manage Theaters</button>
+                    <button class="admin-tab" onclick="switchAdminTab('shows')">Manage Shows</button>
+                    <button class="admin-tab" onclick="switchAdminTab('bookings')">View Bookings</button>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="dashboardTab" class="admin-tab-content active">
+                    <h3>Admin Dashboard</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statsUsers">0</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statsBookings">0</div>
+                            <div class="stat-label">Total Bookings</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statsRevenue">₹0</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statsPending">0</div>
+                            <div class="stat-label">Pending Bookings</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movies Tab -->
+                <div id="moviesTab" class="admin-tab-content">
+                    <h3>Manage Movies</h3>
+                    <form onsubmit="addMovie(event)" class="admin-form">
+                        <input type="text" placeholder="Movie Title" id="addMovieTitle" required>
+                        <input type="text" placeholder="Genre" id="addMovieGenre" required>
+                        <input type="number" placeholder="Duration (min)" id="addMovieDuration" required>
+                        <input type="number" placeholder="Rating" id="addMovieRating" step="0.1" required>
+                        <textarea placeholder="Description" id="addMovieDescription" required></textarea>
+                        <input type="url" placeholder="Poster URL" id="addMoviePoster" required>
+                        <button type="submit" class="btn-primary">Add Movie</button>
+                    </form>
+                </div>
+
+                <!-- Theaters Tab -->
+                <div id="theatersTab" class="admin-tab-content">
+                    <h3>Manage Theaters</h3>
+                    <form onsubmit="addTheater(event)" class="admin-form">
+                        <input type="text" placeholder="Theater Name" id="addTheaterName" required>
+                        <input type="text" placeholder="City" id="addTheaterCity" required>
+                        <input type="text" placeholder="Address" id="addTheaterAddress" required>
+                        <input type="number" placeholder="Number of Screens" id="addTheaterScreens" required>
+                        <input type="number" placeholder="Total Seats per Screen" id="addTheaterSeats" value="100">
+                        <button type="submit" class="btn-primary">Add Theater</button>
+                    </form>
+                </div>
+
+                <!-- Shows Tab -->
+                <div id="showsTab" class="admin-tab-content">
+                    <h3>Manage Shows</h3>
+                    <form onsubmit="addShow(event)" class="admin-form">
+                        <select id="addShowMovie" required>
+                            <option value="">Select Movie</option>
+                        </select>
+                        <select id="addShowTheater" required>
+                            <option value="">Select Theater</option>
+                        </select>
+                        <input type="date" id="addShowDate" required>
+                        <input type="time" id="addShowTime" required>
+                        <input type="number" placeholder="Price" id="addShowPrice" step="0.01" required>
+                        <select id="addShowLanguage">
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Tamil">Tamil</option>
+                        </select>
+                        <select id="addShowFormat">
+                            <option value="2D">2D</option>
+                            <option value="3D">3D</option>
+                            <option value="IMAX">IMAX</option>
+                        </select>
+                        <button type="submit" class="btn-primary">Add Show</button>
+                    </form>
+                </div>
+
+                <!-- Bookings Tab -->
+                <div id="bookingsTab" class="admin-tab-content">
+                    <h3>All Bookings</h3>
+                    <div id="adminBookingsList" class="bookings-list">
+                        <!-- Bookings loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('profileModal')">&times;</span>
+            <h2>My Profile</h2>
+            <form onsubmit="updateProfile(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="profileName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="profilePhone">
+                </div>
+                <button type="submit" class="btn-primary btn-large">Update Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
